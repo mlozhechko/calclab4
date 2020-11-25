@@ -29,12 +29,18 @@ template<class T>
 template <class T>
 int initGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssize_t row2,
                                   T& c, T& s);
+template<class T>
+int initHessGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssize_t row2,
+                               T& c, T& s);
 
 template <class T>
 int matrixTranspose(ub::matrix<T>& A);
 
 template <class T>
 int matrixFastRotate(ub::matrix<T>& A, ssize_t row1, ssize_t row2, T c, T s);
+
+template <class T>
+int matrixFastRotateRight(ub::matrix<T>& A, ssize_t col1, ssize_t col2, T c, T s);
 
 template<class U>
 int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::matrix<U>& R);
@@ -221,6 +227,24 @@ int initGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssiz
   return 0;
 }
 
+template<class T>
+int initHessGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssize_t row2,
+                           T& c, T& s) {
+  const ub::matrix<T>& A = sourceMatrix;
+
+  T denom = A(row1, row1 - 1) * A(row1, row1 - 1) + A(row2, row1 - 1) * A(row2, row1 - 1);
+  denom = std::sqrt(denom);
+
+  if (denom < std::numeric_limits<T>::epsilon()) {
+    return -1;
+  }
+
+  c = A(row1, row1 - 1) / denom;
+  s = A(row2, row1 - 1) / denom;
+
+  return 0;
+}
+
 
 template<class T>
 int matrixTranspose(ub::matrix<T>& A) {
@@ -251,12 +275,26 @@ int matrixFastRotate(ub::matrix<T>& A, ssize_t row1, ssize_t row2, T c, T s) {
   return 0;
 }
 
+template <class T>
+int matrixFastRotateRight(ub::matrix<T>& A, ssize_t col1, ssize_t col2, T c, T s) {
+  ssize_t height = A.size1();
+  for (ssize_t i = 0; i < height; ++i){
+    T tmp = A(i, col1) * c + A(i, col2) * (-s);
+    A(i, col2) = A(i, col1) * s + A(i, col2) * c;
+    A(i, col1) = tmp;
+  }
+
+  return 0;
+}
+
 template<class U>
 int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::matrix<U>& R) {
   const ssize_t n = sourceMatrix.size1();
 
   ub::matrix<U> T = ub::identity_matrix(n, n);
   R = sourceMatrix;
+
+  static size_t rot = 0;
 
   for (ssize_t i = 0; i < n - 1; ++i) {
     bool isDegenerateMatrix = true;
@@ -273,6 +311,8 @@ int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::mat
         log::debug() << "performing rotation c: " << c << " s: " << s << "\n";
         matrixFastRotate(T, i, j, c, s);
         matrixFastRotate(R, i, j, c, s);
+
+        rot += 2;
       }
     }
 
@@ -282,10 +322,10 @@ int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::mat
     }
   }
 
-  if (std::abs(R(n - 1, n - 1)) < std::numeric_limits<U>::epsilon()) {
-    std::cerr << "matrix det == 0, QR decomposition cannot be completed" << std::endl;
-    return -1;
-  }
+//  if (std::abs(R(n - 1, n - 1)) < std::numeric_limits<U>::epsilon()) {
+//    std::cerr << "(end) matrix det == 0, QR decomposition cannot be completed" << std::endl;
+//    return -1;
+//  }
 
   log::debug() << "Q matrix " << T << "\n";
   log::debug() << "R matrix " << R << "\n";
@@ -297,6 +337,8 @@ int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::mat
     matrixMult(T, QT, I);
     log::debug() << "QT Q * Q^T = " << I << "\n";
   }
+
+//  std::cout << "number of rotations: " << rot << std::endl;
 
   matrixTranspose(T);
   Q = std::move(T);
