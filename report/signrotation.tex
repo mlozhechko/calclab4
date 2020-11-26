@@ -1,0 +1,46 @@
+\documentclass[12pt]{article}
+% Эта строка — комментарий, она не будет показана в выходном файле
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc} % Включаем поддержку UTF8
+\usepackage[russian]{babel}  % Включаем пакет для поддержки русского языка
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{multirow}
+\usepackage{pbox}
+\usepackage[showframe=false]{geometry}
+\usepackage{changepage}
+
+\date{}
+\author{}
+
+\begin{document}
+\subsubsection*{Вопросы}
+\begin{enumerate}
+	\item Исследовать чередование знаков в методе обратной итерации
+\end{enumerate}
+
+
+
+\subsubsection*{Разбор}
+\begin{enumerate}	
+\item На практике наблюдается монотонная сходимость для собственных значений меньших по модулю: $-0.06; 36.9$ и меняется знак для: $-45.87; 88.5004$.
+
+Объяснить это можно следующим образом. Воспользуемся выкладками [1, с. 228].
+$$ y^{(1)} \approx \frac{c_{j}}{\lambda_{j}-\lambda_{j}^{*}} e_{j} $$
+$$ x^{(0)}=\sum_{i=1}^{m} c_{i} e_{i} $$
+
+$e_{1},e_{2}, \ldots, e_{m}$ -- собственные вектора
+Следовательно
+$$ y^{(k + 1)} \approx \frac{c_{j}^{k}}{\lambda_{j}-\lambda_{j}^{*}} e_{j} $$
+$$ x^{(k)}=\sum_{i=1}^{m} c_{i}^{k} e_{i} $$
+
+Таким образом чередование знака зависит от погрешности $\lambda_{j}^{*}$. В случае
+если $\lambda_{j}-\lambda_{j}^{*} > 0$ чередования не будет, в обратном случае знаки будут чередоваться.
+\end{enumerate}
+
+\begin{thebibliography}{3}
+\bibitem{amosov}
+Амосов А.А., Дубинский Ю.А., Копченова Н.В. Вычислительные методы для инженеров: Учеб. пособие. — М.: Высш. шк., 1994. — 544 с.
+	
+\end{thebibliography}
+
+\end{document}

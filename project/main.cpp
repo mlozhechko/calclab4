@@ -4,6 +4,7 @@
 #include <fstream>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
+#include <sstream>
 #include "system_solver.h"
 #include "matrix_utils.h"
 #include "eigen_solver.h"
@@ -88,6 +89,7 @@ int lab4Main(int argc, char** argv) {
   StatHolder::printInfo();
   StatHolder::reset();
 
+  std::ostringstream stream{};
   ub::identity_matrix<T> I(A.size1(), A.size2());
   for (ssize_t i = 0; i < solution.size1(); ++i) {
     ub::matrix<T> As = A - (I * solution(i, 0));
@@ -99,8 +101,10 @@ int lab4Main(int argc, char** argv) {
     ub::matrix<T> res;
     matrixMult(As, Ev, res);
 
-    std::cout << "res norm: " << std::sqrt(scalarMult(res, res)) << std::endl;
+    stream << std::sqrt(scalarMult(res, res)) << ", ";
   }
+
+  std::cout << "values: " << stream.str() << std::endl;
 
   return 0;
 }
