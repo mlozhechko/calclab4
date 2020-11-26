@@ -219,6 +219,7 @@ int initGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssiz
     return -1;
   }
 
+  StatHolder::countMultiplication(2);
   T denom = A(row1, row1) * A(row1, row1) + A(row2, row1) * A(row2, row1);
   denom = std::sqrt(denom);
 
@@ -242,6 +243,7 @@ int initHessGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, 
     return -1;
   }
 
+  StatHolder::countMultiplication(2);
   T denom = A(row1, row1 - 1) * A(row1, row1 - 1) + A(row2, row1 - 1) * A(row2, row1 - 1);
   denom = std::sqrt(denom);
 

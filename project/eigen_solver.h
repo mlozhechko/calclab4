@@ -48,6 +48,8 @@ int BasicQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceV
   Qk = ub::zero_matrix<T>(height, width);
   ub::matrix<T> Ak(height, width);
 
+  ub::matrix<T> AC = ub::zero_matrix<T>(height, width);
+
   Ak = A;
   do {
     Q = Qk;
@@ -55,7 +57,13 @@ int BasicQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceV
     matrixMult(R, Qk, Ak);
 
     StatHolder::countIteration();
-  } while (normCubic<T>(Q - Qk) > eps);
+
+    for (ssize_t i = 1; i < height; ++i) {
+      for (ssize_t j = 0; j < i; ++j) {
+        AC(i, j) = Ak(i, j);
+      }
+    }
+  } while (normCubic<T>(AC) > eps);
 
   X = ub::matrix<T>(height, 1);
 
@@ -162,6 +170,10 @@ int HessenbergShiftQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T
                            ub::matrix<T>& solution, T eps) {
   ub::matrix<T> H;
   reduceToHessenbergForm(sourceMatrix, H);
+
+  std::cout << "Reduction to Hessenberg form stat:" << std::endl;
+  StatHolder::printInfo();
+  StatHolder::reset();
 
   return shiftQREigen<T>(H, sourceVector, solution, eps);
 }
