@@ -34,7 +34,6 @@ template <class T>
 int BasicQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceVector,
                  ub::matrix<T>& solution, T eps) {
   ub::matrix<T> A = sourceMatrix;
-  ub::matrix<T> B = sourceVector;
   ub::matrix<T>& X = solution;
 
   ssize_t height = A.size1();
@@ -49,13 +48,13 @@ int BasicQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceV
   Qk = ub::zero_matrix<T>(height, width);
   ub::matrix<T> Ak(height, width);
 
-  size_t n = 0;
   Ak = A;
   do {
     Q = Qk;
     QRDecomposition(Ak, Qk, R);
     matrixMult(R, Qk, Ak);
-    ++n;
+
+    StatHolder::countIteration();
   } while (normCubic<T>(Q - Qk) > eps);
 
   X = ub::matrix<T>(height, 1);
@@ -63,8 +62,6 @@ int BasicQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceV
   for (ssize_t i = 0; i < height; ++i) {
     X(i, 0) = Ak(i, i);
   }
-
-  std::cout << "number of iterations: " << n << std::endl;
 
   return 0;
 }
@@ -79,7 +76,6 @@ static T shiftQREightCycle(ub::matrix<T>&A, ssize_t n, T eps) {
   ub::matrix<T> Q, R;
   ub::identity_matrix<T> I(n, n);
 
-  size_t rot = 0;
   do {
     T sigma = Aint(n - 1, n - 1);
     Aint = Aint - (I * sigma);
@@ -89,14 +85,13 @@ static T shiftQREightCycle(ub::matrix<T>&A, ssize_t n, T eps) {
       throw std::runtime_error("qr failure");
     }
 
-    ub::matrix<T> test;
     matrixMult(R, Q, Aint);
-    matrixMult(Q, R, test);
     Aint += I * sigma;
     lastA.resize(1, Aint.size2() - 1);
     for (size_t i = 0; i < Aint.size2() - 1; ++i) {
       lastA(0, i) = Aint(n - 1, i);
     }
+    StatHolder::countIteration();
   } while (normCubic(lastA) > eps);
 
   return Aint(n - 1, n -1);
@@ -108,7 +103,6 @@ int shiftQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceV
   T sigma = 1;
 
   ub::matrix<T> A = sourceMatrix;
-  ub::matrix<T> B = sourceVector;
   ub::matrix<T>& X = solution;
 
   ssize_t height = A.size1();
@@ -120,7 +114,6 @@ int shiftQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T>& sourceV
 
   solution.resize(height, 1);
   for (ssize_t n = height; n > 1; --n) {
-//    std::cout << "shift qr eigen cycle n = " << n << std::endl;
     X(n - 1, 0) = shiftQREightCycle(A, n, eps);
   }
   X(0, 0) = A(0, 0);
@@ -141,18 +134,12 @@ static bool reduceToHessenbergForm(const ub::matrix<T>& sourceMatrix, ub::matrix
       T c = 0;
       T s = 0;
 
-      std::cout << "curr H " << A << std::endl;
       if (initHessGivensCoefficients(A, j + 1, i, c, s) >= 0) {
-        std::cout << "performing rotation: " << j + 1 << " " << i << std::endl;
         matrixFastRotate(A, j + 1, i, c, s);
-
-        // transposed T matrix
         matrixFastRotateRight(A, j + 1, i, c, -s);
       }
     }
   }
-
-  std::cout << "Hessenberg matrix form: " << A << std::endl;
 
   return true;
 }
@@ -162,6 +149,10 @@ int HessenbergBasicQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T
                            ub::matrix<T>& solution, T eps) {
   ub::matrix<T> H;
   reduceToHessenbergForm(sourceMatrix, H);
+
+  std::cout << "Reduction to Hessenberg form stat:" << std::endl;
+  StatHolder::printInfo();
+  StatHolder::reset();
 
   return BasicQREigen<T>(H, sourceVector, solution, eps);
 }

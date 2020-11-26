@@ -13,7 +13,6 @@ namespace ub = boost::numeric::ublas;
 template <class T>
 int lab4Main(int argc, char** argv) {
   bool isMatrixSpecified = cmdOptionExists(argv, argv + argc, "-matrix");
-//  bool isVectorSpecified = cmdOptionExists(argv, argv + argc, "-vector");
   if (!isMatrixSpecified) {
     std::cerr << "source data is not specified" << std::endl;
     return -1;
@@ -35,9 +34,6 @@ int lab4Main(int argc, char** argv) {
 
   ub::matrix<T> A, B;
   initMatrix(A, matrixStream);
-//  initVector(B, vectorStream);
-
-//  std::cout << "source B: " << B << std::endl;
 
   ub::matrix<T> X;
   std::string method(getCmdOption(argv, argv + argc, "-method"));
@@ -54,8 +50,7 @@ int lab4Main(int argc, char** argv) {
    */
   ub::matrix<T> solution{};
   std::cout << "selected method: " << method << std::endl;
-
-  std::cout << "A: " << A << std::endl;
+  std::cout << "source matrix A: " << A << std::endl;
 
   if (method == "QR") {
     BasicQREigen(A, B, solution, eps);
@@ -67,7 +62,12 @@ int lab4Main(int argc, char** argv) {
     HessenbergShiftQREigen(A, B, solution, eps);
   } else {
     std::cout << "something went wrong" << std::endl;
+    return -1;
   }
+
+  std::cout << "Calculation info: " << std::endl;
+  StatHolder::printInfo();
+  StatHolder::reset();
 
   std::cout << "solution: " << solution << std::endl;
 

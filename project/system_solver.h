@@ -5,6 +5,7 @@
 #include <numeric>
 #include "utils.h"
 #include "matrix_utils.h"
+#include "stat_holder.h"
 
 namespace ub = boost::numeric::ublas;
 
@@ -214,6 +215,10 @@ int initGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssiz
                                   T& c, T& s) {
   const ub::matrix<T>& A = sourceMatrix;
 
+  if (std::abs(A(row2, row1)) < std::numeric_limits<T>::epsilon()) {
+    return -1;
+  }
+
   T denom = A(row1, row1) * A(row1, row1) + A(row2, row1) * A(row2, row1);
   denom = std::sqrt(denom);
 
@@ -231,6 +236,11 @@ template<class T>
 int initHessGivensCoefficients(const ub::matrix<T>& sourceMatrix, ssize_t row1, ssize_t row2,
                            T& c, T& s) {
   const ub::matrix<T>& A = sourceMatrix;
+
+  if (std::abs(A(row2, row1 - 1)) < std::numeric_limits<T>::epsilon()) {
+    // rotation is not required
+    return -1;
+  }
 
   T denom = A(row1, row1 - 1) * A(row1, row1 - 1) + A(row2, row1 - 1) * A(row2, row1 - 1);
   denom = std::sqrt(denom);
@@ -270,6 +280,8 @@ int matrixFastRotate(ub::matrix<T>& A, ssize_t row1, ssize_t row2, T c, T s) {
     T tmp = A(row1, i) * c + A(row2, i) * s;
     A(row2, i) = A(row1, i) * (-s) + A(row2, i) * c;
     A(row1, i) = tmp;
+
+    StatHolder::countMultiplication(4);
   }
 
   return 0;
@@ -282,6 +294,8 @@ int matrixFastRotateRight(ub::matrix<T>& A, ssize_t col1, ssize_t col2, T c, T s
     T tmp = A(i, col1) * c + A(i, col2) * (-s);
     A(i, col2) = A(i, col1) * s + A(i, col2) * c;
     A(i, col1) = tmp;
+
+    StatHolder::countMultiplication(4);
   }
 
   return 0;
@@ -297,7 +311,7 @@ int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::mat
   static size_t rot = 0;
 
   for (ssize_t i = 0; i < n - 1; ++i) {
-    bool isDegenerateMatrix = true;
+//    bool isDegenerateMatrix = true;
 
     for (ssize_t j = i + 1; j < n; ++j) {
       U c = 0, s = 0;
@@ -306,7 +320,7 @@ int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::mat
       log::debug() << "R matrix " << R << "\n";
 
       if (initGivensCoefficients(R, i, j, c, s) >= 0) {
-        isDegenerateMatrix = false;
+//        isDegenerateMatrix = false;
 
         log::debug() << "performing rotation c: " << c << " s: " << s << "\n";
         matrixFastRotate(T, i, j, c, s);
@@ -316,10 +330,10 @@ int QRDecomposition(const ub::matrix<U>& sourceMatrix, ub::matrix<U>& Q, ub::mat
       }
     }
 
-    if (isDegenerateMatrix) {
-      std::cerr << "matrix det == 0, QR decomposition cannot be completed" << std::endl;
-      return -1;
-    }
+//    if (isDegenerateMatrix) {
+//      std::cerr << "matrix det == 0, QR decomposition cannot be completed" << std::endl;
+//      return -1;
+//    }
   }
 
 //  if (std::abs(R(n - 1, n - 1)) < std::numeric_limits<U>::epsilon()) {
@@ -402,6 +416,7 @@ int matrixMult(const ub::matrix<T>& sourceMatrixA, const ub::matrix<T>& sourceMa
       T val = 0;
       for (ssize_t k = 0; k < len; ++k) {
         val += A(i, k) * B(k, j);
+        StatHolder::countMultiplication();
       }
       X(i, j) = val;
     }
