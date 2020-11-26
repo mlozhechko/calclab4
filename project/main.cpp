@@ -52,6 +52,11 @@ int lab4Main(int argc, char** argv) {
   std::cout << "selected method: " << method << std::endl;
   std::cout << "source matrix A: " << A << std::endl;
 
+  /*
+   * B matrix is not initialized and not required for eigen values find algorithm
+   * Interface was just copied from system_solver.h for linear systems.
+   * It's better to be refactored
+   */
   if (method == "QR") {
     BasicQREigen(A, B, solution, eps);
   } else if (method == "ShiftQR") {
@@ -60,6 +65,11 @@ int lab4Main(int argc, char** argv) {
     HessenbergBasicQREigen(A, B, solution, eps);
   } else if (method == "HessShiftQR") {
     HessenbergShiftQREigen(A, B, solution, eps);
+  } else if (method == "Rayleigh") {
+    ub::matrix<T> EigenVectors;
+    ub::matrix<T> EigenValues(A.size1(), 1);
+    RayleighIteration(A, EigenValues, EigenVectors, eps);
+    std::cout << "rayleigh result: EigenValues = " << EigenValues << " sol = " << EigenVectors << std::endl;
   } else {
     std::cout << "something went wrong" << std::endl;
     return -1;
@@ -70,16 +80,27 @@ int lab4Main(int argc, char** argv) {
   StatHolder::reset();
 
   std::cout << "solution: " << solution << std::endl;
-
   ub::matrix<T> sv;
   inverseIteration(A, solution, sv, eps);
   std::cout << "eigen vectors: " << sv << std::endl;
 
-  ub::matrix<T> solR;
-  ub::matrix<T> EV(A.size1(), 1);
-  RayleighIteration(A, EV, solR, eps);
+  std::cout << "Inverse calculation info: " << std::endl;
+  StatHolder::printInfo();
+  StatHolder::reset();
 
-  std::cout << "rayleigh result: EV = " << EV << " sol = " << solR << std::endl;
+  ub::identity_matrix<T> I(A.size1(), A.size2());
+  for (ssize_t i = 0; i < solution.size1(); ++i) {
+    ub::matrix<T> As = A - (I * solution(i, 0));
+    ub::matrix<T> Ev(A.size1(), 1);
+    for (ssize_t j = 0; j < A.size1(); ++j) {
+      Ev(j, 0) = sv(i, j);
+    }
+
+    ub::matrix<T> res;
+    matrixMult(As, Ev, res);
+
+    std::cout << "res norm: " << std::sqrt(scalarMult(res, res)) << std::endl;
+  }
 
   return 0;
 }

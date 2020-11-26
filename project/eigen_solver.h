@@ -22,6 +22,9 @@ int HessenbergShiftQREigen(const ub::matrix<T>& sourceMatrix, const ub::matrix<T
                            ub::matrix<T>& solution, T eps);
 
 template <class T>
+T scalarMult(const ub::matrix<T>& A, const ub::matrix<T>& B);
+
+template <class T>
 int inverseIteration(const ub::matrix<T>& A, const ub::matrix<T>& eigenVector, ub::matrix<T>& solution, T eps);
 
 template <class T>
@@ -187,6 +190,8 @@ int inverseIteration(const ub::matrix<T>& A, const ub::matrix<T>& eigenVector, u
   const ub::matrix<T>& EV = eigenVector;
 
   ub::identity_matrix<T> I(height, height);
+  ub::matrix<T> res;
+
   for (ssize_t i = 0; i < height; ++i) {
     T ev = EV(i, 0);
 
@@ -215,16 +220,13 @@ int inverseIteration(const ub::matrix<T>& A, const ub::matrix<T>& eigenVector, u
         return -1;
       }
 
-//      if (n++ == 10000) {
-//        return -2;
-//      }
       X = X * (1. / coeff);
 
-//      std::cout << "coeff: " << coeff << std::endl;
-//      std::cout << "cur: " << X << std::endl << "prev: " << prevX << std::endl;
-//      std::cout << "norm delta: " << normCubic<T>(X - prevX) << " " << normCubic<T>(X + prevX) << std::endl;
+      StatHolder::countIteration();
 
-    } while ((normCubic<T>(X - prevX) > eps) && (normCubic<T>(X + prevX) > eps));
+      ub::matrix<T> tmp = A - (ev * I);
+      matrixMult(tmp, X, res);
+    } while (std::sqrt(scalarMult(res, res)) > eps);
 
     for (size_t j = 0; j < height; ++j) {
       solution(i, j) = X(j, 0);
@@ -235,7 +237,7 @@ int inverseIteration(const ub::matrix<T>& A, const ub::matrix<T>& eigenVector, u
 }
 
 template <class T>
-static T scalarMult(const ub::matrix<T>& A, const ub::matrix<T>& B) {
+T scalarMult(const ub::matrix<T>& A, const ub::matrix<T>& B) {
   if ((A.size1() != B.size1()) || (A.size2() == 0) || (B.size2() == 0)) {
     throw std::runtime_error("scalar multiplication cannot be calculated");
   }

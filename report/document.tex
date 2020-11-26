@@ -1,0 +1,64 @@
+\documentclass[12pt]{article}
+% Эта строка — комментарий, она не будет показана в выходном файле
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc} % Включаем поддержку UTF8
+\usepackage[russian]{babel}  % Включаем пакет для поддержки русского языка
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{multirow}
+\usepackage{pbox}
+\usepackage[showframe=false]{geometry}
+\usepackage{changepage}
+
+\date{}
+\author{}
+
+\begin{document}
+\subsubsection*{Вопросы}
+\begin{enumerate}
+	\item Результаты вычислений для $\varepsilon=10^{-2}, 10^{-4}, 10^{-6}$
+	\item Результаты работы метода обратных итераций. Критерий останова для данного метода.
+	\item Для модификации метода обратных итераций, гарантирует ли нахождение полного собственного базиса выбор в качестве начальных приближений векторов, составляющих единичную матрицу.
+\end{enumerate}
+
+
+
+\subsubsection*{Разбор}
+\begin{enumerate}	
+\item Результаты вычислений:
+	\begin{enumerate}
+	\item $\varepsilon=10^{-2}$\\
+	\begin{adjustwidth}{-3cm}{}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\multirow{2}{*}{} & \multirow{2}{*}{} & \multicolumn{2}{l|}{QR-разложение} \\ \cline{3-4} 
+		&                   &   \pbox{20cm}{С приведением\\ к форме Хессенберга}      &  \pbox{20cm}{Без приведения\\ к форме Хессенберга}        \\ \hline
+		\multirow{2}{*}{Сдвиг} &    $-$               &  Число итер: 19 Число мульт. опер: 3018   &        Число итер: 33 Число мульт. опер: 6430   \\ \cline{2-4} 
+		&    $+$              &     Число итер: 6 Число мульт. опер: 602     &        Число итер: 5 Число мульт. опер: 772   \\ \hline
+	\end{tabular}
+	\end{adjustwidth}
+	\item $\varepsilon=10^{-4}$\\
+	\begin{adjustwidth}{-3cm}{}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\multirow{2}{*}{} & \multirow{2}{*}{} & \multicolumn{2}{l|}{QR-разложение} \\ \cline{3-4} 
+		&                   &  \pbox{20cm}{С приведением\\ к форме Хессенберга}      &  \pbox{20cm}{Без приведения\\ к форме Хессенберга}        \\ \hline
+		\multirow{2}{*}{Сдвиг} &    $-$               &     Число итер: 40 Число мульт. опер: 5790 &        Число итер: 55 Число мульт. опер:  9844  \\ \cline{2-4} 
+		&    $+$              &         Число итер: 7 Число мульт. опер:  707 &      Число итер: 5 Число мульт. опер:772      \\ \hline
+	\end{tabular}
+	\end{adjustwidth}
+	\item $\varepsilon=10^{-6}$\\
+	\begin{adjustwidth}{-3cm}{}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\multirow{2}{*}{} & \multirow{2}{*}{} & \multicolumn{2}{l|}{QR-разложение} \\ \cline{3-4} 
+		&                   &   \pbox{20cm}{С приведением\\ к форме Хессенберга}      &  \pbox{20cm}{Без приведения\\ к форме Хессенберга}        \\ \hline
+		\multirow{2}{*}{Сдвиг} &    $-$               &    Число итер: 62 Число мульт. опер: 8694 &           Число итер: 76 Число мульт. опер: 12310 \\ \cline{2-4} 
+		&    $+$              &         Число итер: 8  Число мульт. опер: 733   &      Число итер: 7 Число мульт. опер:  1066    \\ \hline
+	\end{tabular}
+	\end{adjustwidth}
+	\end{enumerate}
+\item Результат работы метода обратных итераций
+
+\end{enumerate}
+
+\end{document}
